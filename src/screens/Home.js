@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Ionicons, FontAwesome } from "@expo/vector-icons";
 import {
   Button,
@@ -10,6 +10,8 @@ import {
 } from "react-native";
 import { Card } from "react-native-paper";
 import Constants from "expo-constants";
+import * as Permissions from "expo-permissions";
+import { Notifications } from "expo";
 // import DateTimePicker from "@react-native-community/datetimepicker";
 
 import CustomHeader from "../components/CustomHeader/CustomHeader";
@@ -67,18 +69,47 @@ export default function Home(props) {
     }
   ];
 
+  const [token, setToken] = useState("PUSH_TOKEN");
+
+  const registerForPushNotifications = async () => {
+    console.log("token");
+
+    if (Constants.isDevice) {
+      const { status: existingStatus } = await Permissions.getAsync(
+        Permissions.NOTIFICATIONS
+      );
+      let finalStatus = existingStatus;
+
+      if (existingStatus !== "granted") {
+        const { status } = await Permissions.askAsync(
+          Permissions.NOTIFICATIONS
+        );
+        finalStatus = status;
+      }
+
+      if (finalStatus !== "granted") {
+        return;
+      }
+      let token = await Notifications.getExpoPushTokenAsync();
+      setToken(token);
+      console.log(token);
+    } else {
+      alert("must use physical device for notifications");
+    }
+  };
+
+  useEffect(() => {
+    registerForPushNotifications();
+  });
+
   return (
-    <ScrollView
-      contentContainerStyle={{
-        flex: 1,
-        justifyContent: "center",
-        paddingTop: Constants.statusBarHeight
-      }}
-    >
+    <View style={{ flex: 1 }}>
       <CustomHeader navigation={props.navigation} />
       <View style={styles.container}>
         <Text>Your profile has not been verified yet.</Text>
         <Text style={{ color: "#C30370" }}>How to get verified?</Text>
+        <Text>{token}</Text>
+
         <TouchableOpacity
           onPress={showDate}
           style={{
@@ -105,16 +136,16 @@ export default function Home(props) {
               style={{
                 backgroundColor: "#ebeef5",
                 marginBottom: 20,
-                padding: "1.5rem"
+                padding: 20
               }}
             >
-              <Text style={{ color: "#161F51", fontSize: "1.5rem" }}>
+              <Text style={{ color: "#161F51", fontSize: 20 }}>
                 {view.title}
               </Text>
               <Text
                 style={{
                   color: "#363636",
-                  fontSize: "2rem",
+                  fontSize: 40,
                   fontWeight: "600"
                 }}
               >
@@ -129,10 +160,7 @@ export default function Home(props) {
                   }}
                 >
                   <FontAwesome name="level-up" size={25} color="#23d160" />
-                  <Text style={{ color: "#23d160", fontSize: "1rem" }}>
-                    {" "}
-                    0%
-                  </Text>
+                  <Text style={{ color: "#23d160", fontSize: 15 }}> 0%</Text>
                 </View>
               ) : (
                 <Text></Text>
@@ -151,7 +179,7 @@ export default function Home(props) {
           onChange={updateDate}
         />
       )} */}
-    </ScrollView>
+    </View>
   );
 }
 

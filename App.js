@@ -1,21 +1,32 @@
-import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import React, { useState, useEffect } from "react";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import AppContainer from "./src/AppContainer";
+import Constants from "expo-constants";
+import * as Permissions from "expo-permissions";
+import { Notifications } from "expo";
 
-export default function App() {
+export default function App(props) {
+  const [notification, setNotification] = useState({});
+  const _handleNotification = notification => {
+    console.log("notify");
+    setNotification({ notification: notification });
+  };
+
+  useEffect(() => {
+    this._notificationSubscription = Notifications.addListener(
+      _handleNotification
+    );
+  });
+
   return (
-    <AppContainer />
-    // <View style={styles.container}>
-    //   <Text>Open up App.js to start working on your app!</Text>
-    // </View>
+    <ScrollView
+      contentContainerStyle={{
+        flex: 1,
+        justifyContent: "center",
+        paddingTop: Constants.statusBarHeight
+      }}
+    >
+      <AppContainer />
+    </ScrollView>
   );
 }
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     backgroundColor: '#fff',
-//     alignItems: 'center',
-//     justifyContent: 'center',
-//   },
-// });
